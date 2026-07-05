@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Generate Icons</title></head>
+<body style="background:#111;color:#fff;font-family:sans-serif;padding:40px;text-align:center">
+<h2>Myelin Studio — PWA Icon Generator</h2>
+<p style="color:#888;margin-bottom:30px">Click each button to download the icon at that size</p>
+<div id="buttons"></div>
+<canvas id="c" style="display:none"></canvas>
+<script>
+const sizes = [512, 384, 256, 192, 180, 152, 144, 128, 96, 72, 48, 32, 16];
+
+function drawIcon(ctx, s) {
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, s, s);
+  bg.addColorStop(0, '#0c1220');
+  bg.addColorStop(1, '#0a0e1a');
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, s * 0.22);
+  ctx.fill();
+
+  // Subtle radial glow
+  const glow = ctx.createRadialGradient(s*0.5, s*0.4, 0, s*0.5, s*0.4, s*0.6);
+  glow.addColorStop(0, 'rgba(72,175,160,0.12)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, s, s);
+
+  const cx = s / 2;
+  const cy = s / 2;
+  const scale = s / 100;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // Neuron network lines
+  ctx.strokeStyle = 'rgba(72,175,160,0.3)';
+  ctx.lineWidth = 1.2 * scale;
+  const lines = [
+    [0, -20, -18, 12],
+    [0, -20, 18, 12],
+    [-18, 12, 0, 28],
+    [18, 12, 0, 28],
+    [0, -20, 0, -5],
+  ];
+  lines.forEach(([x1,y1,x2,y2]) => {
+    ctx.beginPath();
+    ctx.moveTo(x1*scale, y1*scale);
+    ctx.lineTo(x2*scale, y2*scale);
+    ctx.stroke();
+  });
+
+  // Central small dot
+  ctx.fillStyle = 'rgba(72,175,160,0.25)';
+  ctx.beginPath();
+  ctx.arc(0, -2*scale, 2*scale, 0, Math.PI*2);
+  ctx.fill();
+
+  // Main nodes
+  const nodes = [
+    { x: 0, y: -20, r: 5.5, opacity: 0.85 },
+    { x: -18, y: 12, r: 4.2, opacity: 0.65 },
+    { x: 18, y: 12, r: 4.2, opacity: 0.65 },
+    { x: 0, y: 28, r: 3.2, opacity: 0.45 },
+  ];
+  nodes.forEach(n => {
+    ctx.fillStyle = `rgba(72,175,160,${n.opacity})`;
+    ctx.beginPath();
+    ctx.arc(n.x*scale, n.y*scale, n.r*scale, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  ctx.restore();
+}
+
+function generateIcon(size) {
+  const c = document.getElementById('c');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+  drawIcon(ctx, size);
+
+  c.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `icon-${size}x${size}.png`;
+    a.click();
+  }, 'image/png');
+}
+
+// Also auto-generate all and save to show
+const container = document.getElementById('buttons');
+sizes.forEach(s => {
+  const btn = document.createElement('button');
+  btn.textContent = `Download ${s}×${s}`;
+  btn.style.cssText = 'margin:6px;padding:10px 20px;background:#48AFA0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px';
+  btn.onclick = () => generateIcon(s);
+  container.appendChild(btn);
+});
+
+// Show preview of 512
+const preview = document.createElement('canvas');
+preview.width = 512;
+preview.height = 512;
+preview.style.cssText = 'display:block;margin:30px auto;width:256px;height:256px;border-radius:56px';
+drawIcon(preview.getContext('2d'), 512);
+document.body.appendChild(preview);
+</script>
+</body>
+</html>
