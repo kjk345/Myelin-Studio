@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myelin-studio-v2';
+const CACHE_NAME = 'myelin-studio-v5';
 
 // Install: cache core assets
 self.addEventListener('install', e => {
